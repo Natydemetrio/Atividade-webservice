@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta Geolocalização</title>
+</head>
+
+<body>
+    <h1>Consulta Geolocalização</h1>
+    <div>
+        <label for="city">Digite o nome da cidade:</label>
+        <input type="text" id="city" name="city">
+        <br>
+        <button onclick="getWeather('current')">Hoje</button>
+        <button onclick="getWeather('forecast')">Próximos 5 dias</button>
+    </div>
+    <p id="location"></p>
+    <p id="weather"></p>
+    <p id="temperature"></p>
+    <p id="precipitation"></p>
+
+    <script>
+        // Função para obter os dados do clima da cidade fornecida
+        function getWeather(type) {
+            const apiKey = "e0ddf1715e974c1eed9f1f0b579f3e18";
+            const city = document.getElementById("city").value;
+            // Definindo o tipo de consulta (atual ou previsão para os próximos 5 dias)
+            let apiUrl = '';
+            if (type === 'current') {
+                apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+            } else if (type === 'forecast') {
+                apiUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`;
+            }
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    // Exibindo os dados do clima
+
+                    if (type === 'current') {
+                        document.getElementById("location").innerHTML = "Cidade: " + data.name + ", " + data.sys.country;
+
+                        const weatherDescription = translateWeatherDescription(data.weather[0].description);
+                        document.getElementById("weather").innerHTML = "Condição do tempo: " + weatherDescription;
+                        const temperatureCelsius = data.main.temp.toFixed(1) + "°C";
+                        const temperatureFahrenheit = ((data.main.temp * 9 / 5) + 32).toFixed(1) + "°F";
+                        document.getElementById("temperature").innerHTML = "Temperatura: " + temperatureCelsius + " / " + temperatureFahrenheit;
+                        const precipitation = data.rain && data.rain['12h'] ? data.rain['12h'] + "mm" : "Nenhuma precipitação";
+                        document.getElementById("precipitation").innerHTML = "Precipitação: " + precipitation;
+                    } else if (type === 'forecast') {
+                        document.getElementById("location").innerHTML = "Cidade: " + data.city.name + ", " + data.city.country;
+                        // Exibir a previsão para os próximos 5 dias
+                        const forecastData = data.list;
+                        // Agrupando as previsões por dia
+                        const dailyForecasts = {};
+                        forecastData.forEach(forecast => {
+                            const forecastDate = new Date(forecast.dt * 1000); // Convertendo o timestamp para milissegundos
+                            const dayOfWeek = forecastDate.toLocaleDateString('pt-BR', { weekday: 'long' });
+                            const dateKey = forecastDate.toDateString(); // Usando a data como chave
+                            if (!dailyForecasts[dateKey]) {
+                                dailyForecasts[dateKey] = {
+                                    dayOfWeek: dayOfWeek,
+                                    weatherDescription: translateWeatherDescription(forecast.weather[0].description),
+                                    temperature: forecast.main.temp.toFixed(1) + "°C"
+                                };
+                            }
+                        });
+                        // Exibindo os dados agrupados
+                        let forecastHTML = "<h2>Previsão para os próximos 5 dias:</h2>";
+                        for (const dateKey in dailyForecasts) {
+                            if (dailyForecasts.hasOwnProperty(dateKey)) {
+                                const forecast = dailyForecasts[dateKey];
+                                forecastHTML += `<p><strong>${forecast.dayOfWeek}</strong>: ${forecast.weatherDescription}, ${forecast.temperature}</p>`;
+                            }
+                        }
+                        document.getElementById("weather").innerHTML = forecastHTML;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao recuperar dados do clima:', error);
+                });
+        }
+
+        // Função para traduzir a descrição do clima para o português
+        function translateWeatherDescription(description) {
+            switch (description) {
+                case 'clear sky':
+                    return 'céu limpo';
+                case 'few clouds':
+                    return 'poucas nuvens';
+                case 'scattered clouds':
+                    return 'nuvens dispersas';
+                case 'broken clouds':
+                    return 'nuvens quebradas';
+                case 'shower rain':
+                    return 'chuva de verão';
+                case 'rain':
+                    return 'chuva';
+                case 'thunderstorm':
+                    return 'tempestade';
+                case 'snow':
+                    return 'neve';
+                case 'mist':
+                    return 'névoa';
+                case ' overcast clouds':
+                    return 'nublado';
+                default:
+                    return description;
+            }
+        }
+    </script>
+</body>
+
+</html>
