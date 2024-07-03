@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Moedas</title>
+    <link rel="stylesheet" href="conversao_moeda.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Conversor de Moedas</h1>
+        <div class="converter">
+            <input type="number" id="valor" placeholder="Valor" required>
+            <input type="text" id="de_moeda" placeholder="De (moeda)" required>
+            <input type="text" id="para_moeda" placeholder="Para (moeda)" required>
+            <button onclick="converterMoeda()">Converter</button>
+        </div>
+        <div class="resultado" id="resultado"></div>
+    </div>
+    <script src="conversao_moeda.js"></script>
+</body>
+</html>
